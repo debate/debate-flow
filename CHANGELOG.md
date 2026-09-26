@@ -7,6 +7,13 @@ format, and this project obeys [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Linux AppImage renders on current Mesa.** It no longer bundles its own
+  Wayland libraries, which shadowed the host's and kept Mesa's EGL driver from
+  loading, so the window opened blank on rolling distros such as Arch, CachyOS
+  and Fedora.
+
 ## [1.3.2] - 2026-09-20
 
 ### Added
