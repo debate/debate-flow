@@ -37,6 +37,7 @@ import {
 import { FLOW_CONTEXT_MENU } from "@/lib/grid/contextMenu";
 import {
     columnsForFlowSheet,
+    crossExEnterMove,
     headerSettings,
     spacerColumns,
     spacerCount,
@@ -1369,6 +1370,24 @@ export default memo(function HotGrid({ sheetId, pane }: { sheetId: string; pane:
         [flushDeferred, showLockHint, snapshot],
     );
 
+    // Where Enter moves the cursor, both committing an edit and on a bare
+    // cell. Handsontable negates the answer itself for Shift+Enter, so the
+    // backward step is negated here to arrive intact. A range keeps the plain
+    // move down, which walks the range's own cells.
+    const enterMoves = useCallback((e: KeyboardEvent) => {
+        const hot = hotRef.current?.hotInstance;
+        const down = { row: 1, col: 0 };
+        if (!hasGroupTierRef.current || !useFlowStore.getState().cxEnterAlternates) return down;
+        const cell = hot?.getSelectedRangeLast()?.highlight;
+        if (!hot || hot.selection.isMultiple() || cell?.row == null || cell.col == null) {
+            return down;
+        }
+        const at = toModelCol(gridCol(cell.col), loadedSpacersRef.current);
+        if (at === null) return down;
+        const move = crossExEnterMove(at, cell.row, colsRef.current.length, e.shiftKey);
+        return e.shiftKey ? { row: -move.row, col: -move.col } : move;
+    }, []);
+
     // A spacer stands for a speech this sheet does not hold, so it is scenery:
     // a click on one lands on the sheet's own first cell rather than parking
     // the cursor in a column that refuses every keystroke. A header click
@@ -1437,6 +1456,7 @@ export default memo(function HotGrid({ sheetId, pane }: { sheetId: string; pane:
                     height="100%"
                     minSpareRows={1}
                     enterBeginsEditing={false}
+                    enterMoves={enterMoves}
                     undo={true}
                     outsideClickDeselects={false}
                     readOnly={viewOnly}

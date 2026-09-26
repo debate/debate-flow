@@ -7,6 +7,12 @@ format, and this project obeys [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+### Added
+
+- **Cross-ex Enter.** An off-by-default setting under Editor makes Enter on the
+  cross-ex sheet move from a question to its answer, and from an answer to the
+  next question a row down. Shift+Enter walks the same path backward.
+
 ### Fixed
 
 - **The Linux AppImage renders on current Mesa.** It no longer bundles its own

@@ -4,6 +4,7 @@ import { EVENTS, getEvent, speechOrder, type EventId } from "@/lib/format/events
 import {
     columnsForFlowSheet,
     crossExColumns,
+    crossExEnterMove,
     headerSettings,
     spacerColumns,
     speechOffset,
@@ -11,6 +12,45 @@ import {
 import { makeCxFlowSheet, makeFlowRound, makeFlowSheet } from "@/lib/model/flow";
 
 const flowSheet = (group: "aff" | "neg") => makeFlowSheet({ title: "1.", group, order: 0 });
+
+describe("crossExEnterMove", () => {
+    const walk = (start: [number, number], steps: number, width: number, backward = false) => {
+        const path = [start];
+        let [row, col] = start;
+        for (let i = 0; i < steps; i++) {
+            const d = crossExEnterMove(col, row, width, backward);
+            row += d.row;
+            col += d.col;
+            path.push([row, col]);
+        }
+        return path;
+    };
+
+    it("alternates question and answer, dropping a row after each answer", () => {
+        expect(walk([0, 2], 4, 4)).toEqual([
+            [0, 2],
+            [0, 3],
+            [1, 2],
+            [1, 3],
+            [2, 2],
+        ]);
+    });
+
+    it("retraces the same path backward and stops at the pair's first cell", () => {
+        expect(walk([1, 3], 4, 4, true)).toEqual([
+            [1, 3],
+            [1, 2],
+            [0, 3],
+            [0, 2],
+            [0, 2],
+        ]);
+    });
+
+    it("moves straight down in an overflow column past the pairs", () => {
+        expect(crossExEnterMove(4, 3, 4, false)).toEqual({ row: 1, col: 0 });
+        expect(crossExEnterMove(4, 3, 4, true)).toEqual({ row: -1, col: 0 });
+    });
+});
 
 describe("columnsForFlowSheet", () => {
     it("policy aff sheets show all seven speeches", () => {

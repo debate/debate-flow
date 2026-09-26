@@ -44,6 +44,8 @@ export interface ConfigFileShape {
     insert_paste: boolean;
     /** Typing on a cell adds to its text instead of replacing it. */
     append_edit: boolean;
+    /** Enter on the cross-ex sheet alternates between a period's two columns. */
+    cx_enter_alternates: boolean;
     scroll_zoom: boolean;
     align_speeches: boolean;
     tooltips: boolean;
@@ -143,6 +145,7 @@ export function configFromState(s: AppConfig): ConfigFileShape {
         rfd_vim: s.rfdVim,
         insert_paste: s.insertPaste,
         append_edit: s.appendEdit,
+        cx_enter_alternates: s.cxEnterAlternates,
         scroll_zoom: s.scrollZoom,
         align_speeches: s.alignSpeeches,
         tooltips: s.tooltips,
@@ -205,6 +208,7 @@ export function toAppConfig(raw: unknown): AppConfig {
         rfdVim: bool(o.rfd_vim, false),
         insertPaste: bool(o.insert_paste, false),
         appendEdit: bool(o.append_edit, true),
+        cxEnterAlternates: bool(o.cx_enter_alternates, false),
         scrollZoom: bool(o.scroll_zoom, true),
         alignSpeeches: bool(o.align_speeches, false),
         tooltips: bool(o.tooltips, true),

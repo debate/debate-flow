@@ -19,6 +19,7 @@ const sample: AppConfig = {
     rfdVim: true,
     insertPaste: true,
     appendEdit: false,
+    cxEnterAlternates: true,
     scrollZoom: false,
     alignSpeeches: true,
     tooltips: false,

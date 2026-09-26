@@ -110,6 +110,12 @@ export interface FlowState {
      * Handsontable's own behavior.
      */
     appendEdit: boolean;
+    /**
+     * On the cross-ex sheet, Enter walks a period's pair of columns in
+     * speaking order: from the left column to the right one on the same row,
+     * and from the right one to the left one a row down. Off, Enter moves down.
+     */
+    cxEnterAlternates: boolean;
     /** Mod+scroll (and trackpad pinch) zooms the grid; off leaves the wheel alone. */
     scrollZoom: boolean;
     /**
@@ -227,6 +233,7 @@ export interface FlowActions {
     setRfdVim(on: boolean): void;
     setInsertPaste(on: boolean): void;
     setAppendEdit(on: boolean): void;
+    setCxEnterAlternates(on: boolean): void;
     setScrollZoom(on: boolean): void;
     setAlignSpeeches(on: boolean): void;
     setTooltips(on: boolean): void;
@@ -340,6 +347,7 @@ interface DisplaySettings {
     rfdVim: boolean;
     insertPaste: boolean;
     appendEdit: boolean;
+    cxEnterAlternates: boolean;
     scrollZoom: boolean;
     alignSpeeches: boolean;
     tooltips: boolean;
@@ -389,6 +397,7 @@ function loadDisplaySettings(): DisplaySettings {
         rfdVim: false,
         insertPaste: false,
         appendEdit: true,
+        cxEnterAlternates: false,
         scrollZoom: true,
         alignSpeeches: false,
         tooltips: true,
@@ -421,6 +430,7 @@ function loadDisplaySettings(): DisplaySettings {
             rfdVim: bool(p.rfdVim, false),
             insertPaste: bool(p.insertPaste, false),
             appendEdit: bool(p.appendEdit, true),
+            cxEnterAlternates: bool(p.cxEnterAlternates, false),
             scrollZoom: bool(p.scrollZoom, true),
             alignSpeeches: bool(p.alignSpeeches, false),
             tooltips: bool(p.tooltips, true),
@@ -464,6 +474,7 @@ function displaySettingsOf(s: FlowState): DisplaySettings {
         rfdVim: s.rfdVim,
         insertPaste: s.insertPaste,
         appendEdit: s.appendEdit,
+        cxEnterAlternates: s.cxEnterAlternates,
         scrollZoom: s.scrollZoom,
         alignSpeeches: s.alignSpeeches,
         tooltips: s.tooltips,
@@ -568,6 +579,7 @@ export const useFlowStore = create<FlowStore>()((set, get) => ({
     rfdVim: initialDisplaySettings.rfdVim,
     insertPaste: initialDisplaySettings.insertPaste,
     appendEdit: initialDisplaySettings.appendEdit,
+    cxEnterAlternates: initialDisplaySettings.cxEnterAlternates,
     scrollZoom: initialDisplaySettings.scrollZoom,
     alignSpeeches: initialDisplaySettings.alignSpeeches,
     tooltips: initialDisplaySettings.tooltips,
@@ -905,6 +917,8 @@ export const useFlowStore = create<FlowStore>()((set, get) => ({
     setInsertPaste: (on) => persistDisplay(set, get, { insertPaste: on }),
 
     setAppendEdit: (on) => persistDisplay(set, get, { appendEdit: on }),
+
+    setCxEnterAlternates: (on) => persistDisplay(set, get, { cxEnterAlternates: on }),
 
     setScrollZoom: (on) => persistDisplay(set, get, { scrollZoom: on }),
 

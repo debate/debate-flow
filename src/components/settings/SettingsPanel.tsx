@@ -125,6 +125,8 @@ export default function SettingsPanel() {
     const setInsertPaste = useFlowStore((s) => s.setInsertPaste);
     const appendEdit = useFlowStore((s) => s.appendEdit);
     const setAppendEdit = useFlowStore((s) => s.setAppendEdit);
+    const cxEnterAlternates = useFlowStore((s) => s.cxEnterAlternates);
+    const setCxEnterAlternates = useFlowStore((s) => s.setCxEnterAlternates);
     const cardmirrorTextType = useFlowStore((s) => s.cardmirrorTextType);
     const setCardmirrorTextType = useFlowStore((s) => s.setCardmirrorTextType);
     const cardmirrorEnabled = useFlowStore((s) => s.cardmirrorEnabled);
@@ -583,6 +585,18 @@ export default function SettingsPanel() {
                                             onCheckedChange={setAppendEdit}
                                             data-testid="append-edit-toggle"
                                             aria-label="Append mode"
+                                        />
+                                    }
+                                />
+                                <SettingRow
+                                    title="Cross-ex Enter"
+                                    description="With cross-ex Enter on, Enter on the cross-ex sheet moves from a question to its answer, and from an answer to the next question a row down."
+                                    control={
+                                        <Switch
+                                            checked={cxEnterAlternates}
+                                            onCheckedChange={setCxEnterAlternates}
+                                            data-testid="cx-enter-toggle"
+                                            aria-label="Cross-ex Enter"
                                         />
                                     }
                                 />

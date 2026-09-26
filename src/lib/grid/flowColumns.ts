@@ -62,6 +62,28 @@ export function crossExColumns(event: EventDef, firstSide: Side): SpeechCol[] {
 }
 
 /**
+ * Where Enter takes the cursor on a cross-ex sheet that walks each period's
+ * pair in speaking order, as a row/column delta: the left column moves to
+ * the right one on the same row, the right one to the left one a row down.
+ * Backward (Shift+Enter) retraces those steps and stays put at the top-left
+ * cell of a pair, which has nothing before it. A column past `width`, an
+ * overflow column from a wider orientation, belongs to no pair and keeps the
+ * plain move down.
+ */
+export function crossExEnterMove(
+    col: number,
+    row: number,
+    width: number,
+    backward: boolean,
+): { row: number; col: number } {
+    if (col < 0 || col >= width) return { row: backward ? -1 : 1, col: 0 };
+    const left = col % 2 === 0;
+    if (!backward) return left ? { row: 0, col: 1 } : { row: 1, col: -1 };
+    if (!left) return { row: 0, col: -1 };
+    return row > 0 ? { row: -1, col: 1 } : { row: 0, col: 0 };
+}
+
+/**
  * The round's speaking order.
  *
  * A round's `firstSide` is a replicated register, so it holds whatever a peer
