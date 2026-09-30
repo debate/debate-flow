@@ -7,6 +7,8 @@ format, and this project obeys [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-09-29
+
 ### Added
 
 - **Cross-ex Enter.** An off-by-default setting under Editor makes Enter on the
@@ -875,7 +877,8 @@ flow one round together without a server of ours in the middle.
 
 - Initial tagged release.
 
-[Unreleased]: https://github.com/shreerammodi/ebb/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/shreerammodi/ebb/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/shreerammodi/ebb/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/shreerammodi/ebb/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/shreerammodi/ebb/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/shreerammodi/ebb/compare/v1.2.1...v1.3.0
