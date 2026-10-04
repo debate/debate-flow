@@ -71,6 +71,18 @@ export function notifyGridMutated(): void {
 }
 
 /**
+ * Close the focused grid's editor onto its cell, keeping what was typed.
+ *
+ * Until the editor closes, a half-typed cell lives in the editor alone and not
+ * in the round, so anything about to write the round and discard it calls this
+ * first. Only the focused grid can hold an open editor.
+ */
+export function commitOpenEdit(): void {
+    const editor = active?.getActiveEditor();
+    if (editor?.isOpened()) editor.finishEditing();
+}
+
+/**
  * Return keyboard focus to the grid so typing edits the flow and arrows move
  * cells. Overlays call this on close; re-selecting the last cell makes the grid
  * listen again after a dialog stole focus. Returns false when no grid is

@@ -7,6 +7,13 @@ format, and this project obeys [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Closing or quitting mid-cell keeps the cell.** Close Window, Quit, Close
+  Flow and installing an update now commit the cell being typed before the
+  flow is written, so the half-finished cell reaches disk instead of being
+  discarded with the window.
+
 ## [1.3.3] - 2026-09-29
 
 ### Added

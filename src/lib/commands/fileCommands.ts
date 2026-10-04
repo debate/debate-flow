@@ -10,6 +10,7 @@
 import { toast } from "sonner";
 
 import { errorMessage } from "@/lib/errorMessage";
+import { commitOpenEdit } from "@/lib/grid/hotInstance";
 import { getFlowFs } from "@/lib/persistence/flowFs";
 import { pickFlowToOpen, saveFlowAs, saveFlowNow } from "@/lib/persistence/flowSession";
 import { useFlowStore } from "@/lib/store/useFlowStore";
@@ -43,6 +44,22 @@ export async function saveOpenFlow(): Promise<boolean> {
     // Nothing open is nothing to lose, which counts as safe.
     if (!round || !docPath) return true;
     return saveFlowNow(docPath, round, useSaveStatus.getState().report);
+}
+
+/**
+ * Write the open flow on the way out of it - closing the flow or the window,
+ * quitting, or relaunching into an update - and report whether it reached disk.
+ *
+ * A half-typed cell is in the editor and not yet in the round, and a menu
+ * accelerator moves no focus, so Meta+W or Meta+Q arriving mid-word would
+ * write the round without the word and then throw the editor away. Closing the
+ * editor first is what puts it in the write. Meta+S does not do this: the
+ * debater keeps typing after it, and a keystroke on a cell with no editor open
+ * starts a fresh one over the cell.
+ */
+export async function saveBeforeLeaving(): Promise<boolean> {
+    commitOpenEdit();
+    return saveOpenFlow();
 }
 
 export async function saveOpenFlowAs(): Promise<void> {
@@ -82,7 +99,7 @@ export async function revealOpenFlow(): Promise<void> {
  * round on screen where the user can still act on it.
  */
 export async function closeOpenFlow(): Promise<void> {
-    if (!(await saveOpenFlow())) {
+    if (!(await saveBeforeLeaving())) {
         toast.error(
             "This flow could not be saved, so it is still open. Free up space, reconnect the drive, or use Save As to put it somewhere else.",
         );

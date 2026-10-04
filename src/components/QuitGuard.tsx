@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { shutdownCollab } from "@/lib/collab/runtime";
-import { saveOpenFlow } from "@/lib/commands/fileCommands";
+import { saveBeforeLeaving } from "@/lib/commands/fileCommands";
 import { isDesktop } from "@/lib/update/adapter";
 import { listenHere } from "@/lib/windowEvents";
 
@@ -42,7 +42,7 @@ export default function QuitGuard() {
                 void (async () => {
                     let saved = false;
                     try {
-                        saved = await saveOpenFlow();
+                        saved = await saveBeforeLeaving();
                     } catch {
                         saved = false;
                     }

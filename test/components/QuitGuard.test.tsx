@@ -24,11 +24,11 @@ vi.mock("@tauri-apps/api/webviewWindow", () => ({
     getCurrentWebviewWindow: () => ({ label: "win-0" }),
 }));
 
-const saveOpenFlow = vi.fn();
+const saveBeforeLeaving = vi.fn();
 vi.mock("@/lib/commands/fileCommands", () => ({
-    saveOpenFlow: () => {
+    saveBeforeLeaving: () => {
         order.push("save");
-        return saveOpenFlow();
+        return saveBeforeLeaving();
     },
 }));
 
@@ -49,7 +49,7 @@ import QuitGuard from "@/components/QuitGuard";
 
 beforeEach(() => {
     invoke.mockReset();
-    saveOpenFlow.mockReset();
+    saveBeforeLeaving.mockReset();
     shutdownCollab.mockReset();
     shutdownCollab.mockResolvedValue(undefined);
     toastError.mockReset();
@@ -66,12 +66,12 @@ async function requestQuit() {
 
 describe("QuitGuard", () => {
     it("writes the open flow before letting the app exit", async () => {
-        saveOpenFlow.mockResolvedValue(true);
+        saveBeforeLeaving.mockResolvedValue(true);
 
         await requestQuit();
 
         await waitFor(() => expect(invoke).toHaveBeenCalledWith("finish_quit", { saved: true }));
-        expect(saveOpenFlow).toHaveBeenCalled();
+        expect(saveBeforeLeaving).toHaveBeenCalled();
     });
 
     // The round is what the exit is holding for, so it reaches disk first. The
@@ -80,7 +80,7 @@ describe("QuitGuard", () => {
     // times the connection out, which is tens of seconds of a chip that reads
     // connected.
     it("saves the flow, then hangs up on the partners, then reports back", async () => {
-        saveOpenFlow.mockResolvedValue(true);
+        saveBeforeLeaving.mockResolvedValue(true);
 
         await requestQuit();
 
@@ -91,7 +91,7 @@ describe("QuitGuard", () => {
     // A flow that reached disk is not put back at risk by a link that would
     // not close, and the endpoint dies with the process either way.
     it("still reports the flow saved when the hang-up fails", async () => {
-        saveOpenFlow.mockResolvedValue(true);
+        saveBeforeLeaving.mockResolvedValue(true);
         shutdownCollab.mockRejectedValue(new Error("the endpoint refused to stop"));
 
         await requestQuit();
@@ -103,7 +103,7 @@ describe("QuitGuard", () => {
     it("cancels the exit when the flow could not be written", async () => {
         // Quitting with a full disk must keep the window, not take the round
         // down with the process.
-        saveOpenFlow.mockResolvedValue(false);
+        saveBeforeLeaving.mockResolvedValue(false);
 
         await requestQuit();
 
@@ -112,7 +112,7 @@ describe("QuitGuard", () => {
     });
 
     it("treats a thrown save as a failure rather than exiting anyway", async () => {
-        saveOpenFlow.mockRejectedValue(new Error("boom"));
+        saveBeforeLeaving.mockRejectedValue(new Error("boom"));
 
         await requestQuit();
 

@@ -10,13 +10,17 @@ import { applyOp, type CollabOp, type OpContext } from "@/lib/collab/ops";
 import { clearReplica, getReplica, replaceReplicaDoc, seedReplica } from "@/lib/collab/replica";
 import { createClock } from "@/lib/collab/stamp";
 import { executeCommand } from "@/lib/commands/commands";
+import { closeOpenFlow } from "@/lib/commands/fileCommands";
 import { trimGrid } from "@/lib/grid/codec";
 import { gridCol, toModelCol } from "@/lib/grid/colSpace";
 import { getActiveHot, getActiveSpacers } from "@/lib/grid/hotInstance";
 import { applyRemote } from "@/lib/grid/remoteBridge";
 import { makeFlowRound, makeFlowSheet, type CellMeta, type CellSource } from "@/lib/model/flow";
+import { parseFlowFile, serializeFlow } from "@/lib/persistence/flowFile";
 import { useCollabStore } from "@/lib/store/useCollabStore";
 import { useFlowStore } from "@/lib/store/useFlowStore";
+
+import { installFakeFlowFs } from "../../support/fakeFlowFs";
 
 registerAllModules();
 
@@ -730,6 +734,47 @@ describe("sheet switch under an open editor", () => {
         const cells = Object.values(getReplica()!.sheets[aff.id].cells);
         expect(cells.find((c) => c.col === 2)!.text).toBe("turn");
         expect(cells.find((c) => c.col === 1)!.text).toBe("perm");
+    });
+});
+
+/**
+ * Closing the flow, closing the window, and quitting all write the round and
+ * then discard it, and a menu accelerator moves no focus on the way. The word
+ * a debater is halfway through is in the editor and nowhere else, so it has to
+ * reach the round before the write does.
+ */
+describe("leaving under an open editor", () => {
+    afterEach(() => {
+        clearReplica();
+        useFlowStore.setState({
+            round: null,
+            docPath: null,
+            activeSheetId: null,
+            splitSheetId: null,
+            alignSpeeches: false,
+        });
+    });
+
+    it("writes the half-typed cell into the file it closes", async () => {
+        const fs = installFakeFlowFs();
+        const round = makeFlowRound();
+        const sheet = round.sheets[1];
+        fs.files.set("/a.ebb", serializeFlow(round));
+        useFlowStore.setState({
+            round,
+            docPath: "/a.ebb",
+            activeSheetId: sheet.id,
+            splitSheetId: null,
+        });
+
+        render(<HotGrid sheetId={sheet.id} pane={1} />);
+        const hot = await mounted();
+        typeInto(hot, 0, 0, "perm solves");
+
+        await closeOpenFlow();
+
+        const written = parseFlowFile(fs.files.get("/a.ebb")!);
+        expect(written.sheets.find((s) => s.id === sheet.id)!.data[0]?.[0]).toBe("perm solves");
     });
 });
 
