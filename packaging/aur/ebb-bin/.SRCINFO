@@ -1,0 +1,19 @@
+pkgbase = ebb-bin
+	pkgdesc = Keyboard-first, local-first editor for flowing competitive debate rounds
+	pkgver = 1.4.2
+	pkgrel = 1
+	url = https://github.com/shreerammodi/ebb
+	install = ebb-bin.install
+	arch = x86_64
+	license = MPL-2.0
+	depends = gtk3
+	depends = webkit2gtk-4.1
+	depends = hicolor-icon-theme
+	provides = ebb
+	conflicts = ebb
+	conflicts = ebb-git
+	options = !debug
+	source = https://github.com/shreerammodi/ebb/releases/download/v1.4.2/ebb_1.4.2_amd64.deb
+	sha256sums = e7dde0f864799d34e03b1f9fbb30eab569d1e6a8d44fddb65cccf23d18818637
+
+pkgname = ebb-bin

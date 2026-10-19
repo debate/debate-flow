@@ -1,0 +1,6 @@
+# makepkg's working directories and the package it produces. They land beside
+# the PKGBUILD, and none of them belong in the repo the AUR copies from.
+/src/
+/pkg/
+*.pkg.tar.*
+ebb_*_amd64.deb

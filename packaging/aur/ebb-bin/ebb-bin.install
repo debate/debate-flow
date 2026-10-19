@@ -1,0 +1,21 @@
+# The .deb's own postinst does both of these for Debian. On Arch the same work
+# belongs in an install script - the MIME XML and the .desktop entry are inert
+# until their databases are rebuilt - and removal has to undo it, which the
+# Debian packaging never needed to.
+#
+# Both tools ship in base. A missing one costs the file association, never the
+# installation, so nothing here fails a transaction.
+
+post_install() {
+    update-mime-database usr/share/mime
+    update-desktop-database -q usr/share/applications
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    update-mime-database usr/share/mime
+    update-desktop-database -q usr/share/applications
+}

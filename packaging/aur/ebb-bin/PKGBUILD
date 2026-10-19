@@ -1,0 +1,34 @@
+# Maintainer: Shreeram Modi <smodi@smodi.net>
+
+# The released .deb is repackaged rather than the .AppImage. The image is 87 MB
+# because it carries its own Wayland libraries and an AppImage-shaped install
+# has to live outside the filesystem hierarchy; the .deb's payload is already
+# rooted at / - binary, .desktop entry, hicolor icons and the shared-mime-info
+# file - and links the WebKitGTK the distribution ships instead of bundling it.
+
+pkgname=ebb-bin
+_pkgname=ebb
+pkgver=1.4.2
+pkgrel=1
+pkgdesc="Keyboard-first, local-first editor for flowing competitive debate rounds"
+arch=('x86_64')
+url="https://github.com/shreerammodi/ebb"
+license=('MPL-2.0')
+depends=('gtk3' 'webkit2gtk-4.1' 'hicolor-icon-theme')
+provides=('ebb')
+conflicts=('ebb' 'ebb-git')
+# The binary is built upstream and carries no debug info of its own, so a debug
+# split would index nothing and ship an empty package beside every install.
+options=('!debug')
+install=ebb-bin.install
+source=("${url}/releases/download/v${pkgver}/${_pkgname}_${pkgver}_amd64.deb")
+sha256sums=('e7dde0f864799d34e03b1f9fbb30eab569d1e6a8d44fddb65cccf23d18818637')
+
+package() {
+    # A .deb is an ar archive holding the payload as a second tarball, and
+    # libarchive reads both layers.
+    local _deb="${srcdir}/${_pkgname}_${pkgver}_amd64.deb"
+
+    bsdtar -xf "${_deb}" -C "${srcdir}"
+    bsdtar -xf "${srcdir}"/data.tar.* -C "${pkgdir}"
+}
