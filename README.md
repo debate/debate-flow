@@ -70,6 +70,19 @@ anyway.
 
 ### Linux
 
+Arch Linux:
+
+1. Install [`ebb-bin`](https://aur.archlinux.org/packages/ebb-bin) from the AUR:
+
+```bash
+yay -S ebb-bin        # or paru -S ebb-bin
+```
+
+Updates arrive through `pacman`. Update checks in the app are off by default;
+leave them off so `pacman` owns the binary.
+
+Other distributions:
+
 1. Download the `*.AppImage` file.
 2. Make it executable and run it:
 

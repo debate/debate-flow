@@ -7,6 +7,12 @@ format, and this project obeys [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+### Added
+
+- **Arch Linux installs from the AUR.** `ebb-bin` repackages the released Linux
+  `.deb`, so an AUR helper installs ebb and `pacman -Syu` keeps it current.
+  Update checks in the app stay off for a package-managed install.
+
 ## [1.4.2] - 2026-10-17
 
 ### Changed
