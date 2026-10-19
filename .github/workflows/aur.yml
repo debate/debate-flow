@@ -1,0 +1,90 @@
+name: AUR package
+
+# A PKGBUILD is a shell script that runs on someone else's machine, and the
+# .SRCINFO beside it is the file the AUR actually serves. Neither is imported by
+# the app, so nothing else here would notice either rotting. This builds the
+# recipe the way a user would - in Arch, from the released .deb, against the
+# checksum that is pinned - then installs it and asserts what it put on disk.
+on:
+    pull_request:
+        paths:
+            - "packaging/aur/**"
+            - "scripts/aur-bump.mjs"
+            - ".github/workflows/aur.yml"
+    push:
+        branches: [main]
+        paths:
+            - "packaging/aur/**"
+            - "scripts/aur-bump.mjs"
+            - ".github/workflows/aur.yml"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    package:
+        name: ebb-bin (x86_64)
+        runs-on: ubuntu-22.04
+        # A rolling tag on purpose. A digest would freeze this at whatever Arch
+        # looked like the day it was pinned, and a package that stops building
+        # against current Arch is the one failure this job exists to catch.
+        container:
+            image: archlinux:base-devel
+        steps:
+            # The image carries makepkg and fakeroot but not git, which the
+            # checkout needs, so the sync that puts the container on current Arch
+            # is also the one that installs it.
+            - name: Bring the container up to current Arch
+              run: pacman -Syu --noconfirm --needed git desktop-file-utils shared-mime-info webkit2gtk-4.1
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            # makepkg refuses to run as root, and a build that does not run the
+            # way it runs on a debater's machine is not evidence of anything.
+            - name: Create an unprivileged builder
+              run: |
+                  useradd --create-home builder
+                  chown -R builder: packaging/aur/ebb-bin
+
+            - name: Require .SRCINFO to match the PKGBUILD
+              run: |
+                  cd packaging/aur/ebb-bin
+                  runuser -u builder -- makepkg --printsrcinfo > /tmp/.SRCINFO
+                  if ! diff -u .SRCINFO /tmp/.SRCINFO; then
+                      echo "::error::.SRCINFO is stale; regenerate it with: (cd packaging/aur/ebb-bin && makepkg --printsrcinfo > .SRCINFO)" >&2
+                      exit 1
+                  fi
+
+            - name: Build
+              run: |
+                  cd packaging/aur/ebb-bin
+                  runuser -u builder -- makepkg --noconfirm
+
+            - name: Install
+              # The `-bin-[0-9]` pattern is the package itself; a bare `-*` would
+              # also match ebb-bin-debug when makepkg's debug split is on.
+              run: pacman -U --noconfirm packaging/aur/ebb-bin/ebb-bin-[0-9]*.pkg.tar.zst
+
+            - name: Assert what a debater's machine gets
+              run: |
+                  # depends has to cover every shared library, or the app dies on
+                  # launch for anyone who installed it into a bare system.
+                  if ldd /usr/bin/ebb | grep 'not found'; then
+                      echo "::error::the depends list is missing a shared library" >&2
+                      exit 1
+                  fi
+
+                  # A double-clicked .ebb resolves to the type the .desktop entry
+                  # claims only when the MIME XML shipped and post_install rebuilt
+                  # the database from it.
+                  printf '{}' > /tmp/probe.ebb
+                  content_type=$(gio info -a standard::content-type /tmp/probe.ebb | sed -n 's/.*standard::content-type: //p')
+                  if [ "$content_type" != "application/x-ebb-flow" ]; then
+                      echo "::error::a .ebb file resolves to ${content_type:-nothing}" >&2
+                      exit 1
+                  fi
+
+                  test -x /usr/bin/ebb
+                  desktop-file-validate /usr/share/applications/ebb.desktop
+                  pacman -Q ebb-bin
