@@ -19,6 +19,7 @@
     "bundle": {
         "active": true,
         "targets": "all",
+        "category": "Productivity",
         "useLocalToolsDir": true,
         "createUpdaterArtifacts": true,
         "icon": [
