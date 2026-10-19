@@ -14,11 +14,12 @@ links carry the internals.
 
 ## 1. Shipping model
 
-| Product         | What it is                              | Distribution                                        | How it updates                                                    |
-| --------------- | --------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
-| **Web build**   | Static export in `out/`                 | Vercel CDN, no backend                              | User reloads; the CDN serves the newest tag                       |
-| **Desktop app** | Tauri 2 shell wrapping the same `out/`  | Installers and portable builds, GitHub Release      | In-app signed auto-updater, install on user confirm               |
-| **Nightly**     | The same desktop app, built from `main` | Unsigned builds on the rolling `nightly` prerelease | Updates itself to the next tagged release, not to a newer nightly |
+| Product         | What it is                                      | Distribution                                        | How it updates                                                    |
+| --------------- | ----------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
+| **Web build**   | Static export in `out/`                         | Vercel CDN, no backend                              | User reloads; the CDN serves the newest tag                       |
+| **Desktop app** | Tauri 2 shell wrapping the same `out/`          | Installers and portable builds, GitHub Release      | In-app signed auto-updater, install on user confirm               |
+| **Nightly**     | The same desktop app, built from `main`         | Unsigned builds on the rolling `nightly` prerelease | Updates itself to the next tagged release, not to a newer nightly |
+| **Arch (AUR)**  | `ebb-bin`, the released Linux `.deb` repackaged | AUR, pushed by hand from `packaging/aur/ebb-bin`    | `pacman -Syu`, like every Arch package                            |
 
 Both products ship from one tag, so a version number means the same thing on
 both. The nightly channel sits outside that: it is the current tip of `main`,
@@ -235,7 +236,33 @@ git push --follow-tags
 #    and fast-forwards `release` to the tag.
 # -> the /latest/ redirect flips; desktop clients pick it up on next check.
 # -> Vercel deploys `release` to production, so web lands on the same commit.
+# -> once the release exists, bump the AUR recipe: node scripts/aur-bump.mjs $VERSION
 ```
 
 There is no `critical` flag. Every install waits for the user to click, so a
 fix ships as an ordinary release and reaches people the next time they check.
+
+## 11. Arch (AUR)
+
+`packaging/aur/ebb-bin` holds the `PKGBUILD`, `.SRCINFO` and install script
+behind https://aur.archlinux.org/packages/ebb-bin. It repackages the released
+Linux `.deb`, so it moves after section 6 publishes, never at tag time:
+
+```bash
+node scripts/aur-bump.mjs X.Y.Z
+```
+
+CI (`.github/workflows/aur.yml`) builds the recipe in an Arch container, then
+installs it and asserts that a `.ebb` file resolves to
+`application/x-ebb-flow` and that no shared library is missing. The one-time
+account setup and the copy into the AUR clone are in
+[`../packaging/aur/README.md`](../packaging/aur/README.md).
+
+Two things worth knowing before touching it:
+
+- **The in-app updater does not apply to this install.** Its `linux-x86_64`
+  entry is the AppImage, and Tauri installs an update by rewriting the AppImage
+  the process is running from, which a package-managed `/usr/bin/ebb` is not.
+  Update checks are off by default; leave them off and let `pacman` update it.
+- **`arch=('x86_64')` matches what ships.** No Linux aarch64 artifact exists, so
+  the AUR package cannot offer one before the release does.
